@@ -1,70 +1,64 @@
-# Getting Started with Create React App
+# Presensi Bimbel SmartKids Global
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Aplikasi manajemen presensi dan pembayaran digital untuk bimbingan belajar, dibangun dengan React dan Firebase.
 
-## Available Scripts
+## Fitur Utama
 
-In the project directory, you can run:
+### 📱 Absensi Digital
+*   **Pencatatan Real-time**: Memungkinkan tutor mencatat kehadiran siswa dengan mudah.
+*   **Geolokasi**: Validasi lokasi otomatis untuk memastikan kehadiran di tempat.
+*   **Foto Bukti**: Upload foto kegiatan belajar sebagai bukti otentik.
+*   **Tanda Tangan Digital**: Validasi kehadiran siswa melalui tanda tangan digital.
 
-### `npm start`
+### 💰 Manajemen Pembayaran
+*   **Monitoring Status**: Lacak status pembayaran siswa (Lunas, Belum, Telat).
+*   **Statistik**: Dashboard ringkas untuk melihat total siswa dan status pembayaran bulanan.
+*   **Multi-Bulan**: Dukungan untuk melihat riwayat pembayaran hingga 12 bulan.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 👥 Manajemen User
+*   **Role-based Access**: Akses terpisah untuk Admin dan Tutor.
+*   **Data Siswa**: Manajemen data siswa lengkap dengan level pendidikan dan jadwal.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Teknologi
 
-### `npm test`
+*   **Frontend**: React.js
+*   **Styling**: Modern CSS (Glassmorphism, Responsive Design)
+*   **Database**: Firebase (Firestore)
+*   **Storage**: Firebase Storage (untuk foto bukti)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Instalasi
 
-### `npm run build`
+1.  **Clone Repository**
+    ```bash
+    git clone https://github.com/username/presensi-bimbel.git
+    cd presensi-bimbel
+    ```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+2.  **Install Dependencies**
+    ```bash
+    npm install
+    ```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+3.  **Konfigurasi Environment**
+    Salin file `.env.example` menjadi `.env.local` dan sesuaikan isinya:
+    ```bash
+    cp .env.example .env.local
+    ```
+    Isi `.env.local` dengan kredensial yang sesuai.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+4.  **Jalankan Aplikasi**
+    ```bash
+    npm start
+    ```
+    Buka [http://localhost:3000](http://localhost:3000) di browser.
 
-### `npm run eject`
+## Struktur Project
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+*   `/src/components`: Komponen React reusable (Forms, Tables, Modals).
+*   `/src/pages`: Halaman utama aplikasi (UserPage, AdminPage).
+*   `/src/services`: Logika bisnis dan integrasi API (Database, Auth).
+*   `/src/styles`: File CSS global dan modular.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Lisensi
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+[MIT](LICENSE)
