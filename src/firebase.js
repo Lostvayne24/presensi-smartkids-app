@@ -4,13 +4,13 @@ import { getAuth } from 'firebase/auth';
 
 // PASTE CONFIG YANG SUDAH ANDA COPY DI SINI
 const firebaseConfig = {
-  apiKey: "AIzaSyD05anfW1NbX99czkCts-dO3JmWA-kdJHc",
-  authDomain: "bimbel-smartkids.firebaseapp.com",
-  projectId: "bimbel-smartkids",
-  storageBucket: "bimbel-smartkids.firebasestorage.app",
-  messagingSenderId: "455519051093",
-  appId: "1:455519051093:web:b3a2b49d5812d778b3e3dc",
-  measurementId: "G-ZJTZE5TQCC"
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase
