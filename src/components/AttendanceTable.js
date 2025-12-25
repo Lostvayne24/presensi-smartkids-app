@@ -363,8 +363,8 @@ const AttendanceTable = ({ data, onUpdate, isAdmin = false }) => {
                         editable && (
                           <>
                             <button
+                              className="edit-btn"
                               onClick={() => handleEditClick(item)}
-                              style={{ backgroundColor: '#ffc107', color: '#000', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}
                             >
                               Edit
                             </button>
@@ -372,7 +372,6 @@ const AttendanceTable = ({ data, onUpdate, isAdmin = false }) => {
                               className="delete-btn"
                               onClick={() => handleDelete(item.id)}
                               disabled={!item.id}
-                              style={{ backgroundColor: '#dc2626', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}
                             >
                               Hapus
                             </button>

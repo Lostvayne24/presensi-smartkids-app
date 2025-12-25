@@ -144,6 +144,16 @@ export const useStudentManagement = () => {
             return;
         }
 
+        // Check for duplicates
+        const isDuplicate = students.some(
+            s => s.name.toLowerCase() === newStudent.name.trim().toLowerCase()
+        );
+
+        if (isDuplicate) {
+            setMessage({ type: 'error', text: 'Nama siswa sudah ada' });
+            return;
+        }
+
         try {
             const result = await addStudent(newStudent);
             if (result.success) {
@@ -183,6 +193,16 @@ export const useStudentManagement = () => {
 
         if (editingStudent.phone && !/^[0-9+\-\s()]*$/.test(editingStudent.phone)) {
             setMessage({ type: 'error', text: 'Format nomor telepon tidak valid' });
+            return;
+        }
+
+        // Check for duplicates (excluding current student)
+        const isDuplicate = students.some(
+            s => s.name.toLowerCase() === editingStudent.name.trim().toLowerCase() && s.id !== editingStudent.id
+        );
+
+        if (isDuplicate) {
+            setMessage({ type: 'error', text: 'Nama siswa sudah ada' });
             return;
         }
 

@@ -11,36 +11,36 @@ export const exportToExcel = (data, filters) => {
       // Urutkan berdasarkan tanggal (descending - terbaru dulu)
       const dateA = new Date(a.date);
       const dateB = new Date(b.date);
-      
-      if (dateA > dateB) return -1;
-      if (dateA < dateB) return 1;
-      
+
+      if (dateA < dateB) return -1;
+      if (dateA > dateB) return 1;
+
       // Jika tanggal sama, urutkan berdasarkan waktu mulai
       const timeA = a.timeStart || a.timeSlot?.split('-')[0] || '';
       const timeB = b.timeStart || b.timeSlot?.split('-')[0] || '';
-      
+
       if (timeA < timeB) return -1;
       if (timeA > timeB) return 1;
-      
+
       return 0;
     });
 
     // Fungsi untuk menghitung durasi dalam menit
     const calculateDuration = (startTime, endTime) => {
       if (!startTime || !endTime) return 0;
-      
+
       try {
         // Parse waktu dari format HH:MM
         const [startHour, startMinute] = startTime.split(':').map(Number);
         const [endHour, endMinute] = endTime.split(':').map(Number);
-        
+
         // Hitung total menit dari waktu mulai dan selesai
         const startTotalMinutes = startHour * 60 + startMinute;
         const endTotalMinutes = endHour * 60 + endMinute;
-        
+
         // Hitung selisih
         const durationMinutes = endTotalMinutes - startTotalMinutes;
-        
+
         // Pastikan durasi tidak negatif
         return durationMinutes > 0 ? durationMinutes : 0;
       } catch (error) {
@@ -49,12 +49,12 @@ export const exportToExcel = (data, filters) => {
       }
     };
 
-    // Format data untuk Excel - TAMBAH KOLOM DURASI
+    // Format data untuk Excel
     const excelData = sortedData.map((item, index) => {
       const startTime = item.timeStart || item.timeSlot?.split('-')[0] || '';
       const endTime = item.timeEnd || item.timeSlot?.split('-')[1] || '';
       const durationMinutes = calculateDuration(startTime, endTime);
-      
+
       return {
         'No': index + 1,
         'Hari': new Date(item.date).toLocaleDateString('id-ID', { weekday: 'long' }),
@@ -66,7 +66,7 @@ export const exportToExcel = (data, filters) => {
         'Tempat': item.location,
         'Waktu Mulai': startTime,
         'Waktu Selesai': endTime,
-        'Durasi (menit)': durationMinutes, // KOLOM BARU
+        'Durasi (menit)': durationMinutes,
         'Status': item.status,
         'Catatan': item.notes,
         'Waktu Input': new Date(item.timestamp).toLocaleString('id-ID')
@@ -74,6 +74,9 @@ export const exportToExcel = (data, filters) => {
     });
 
     const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+    // Calculate duplicate merges for Excel
+
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Presensi');
 
@@ -89,7 +92,7 @@ export const exportToExcel = (data, filters) => {
       { wch: 15 },  // Tempat
       { wch: 12 },  // Waktu Mulai
       { wch: 12 },  // Waktu Selesai
-      { wch: 12 },  // Durasi (menit) - KOLOM BARU
+      { wch: 12 },  // Durasi (menit)
       { wch: 10 },  // Status
       { wch: 25 },  // Catatan
       { wch: 20 }   // Waktu Input
@@ -101,7 +104,7 @@ export const exportToExcel = (data, filters) => {
     const year = filters.year || 'all';
     const tutor = filters.tutor ? `_${filters.tutor.replace(/\s+/g, '_')}` : '';
     const filename = `presensi_bimbel_${month}_${year}${tutor}.xlsx`;
-    
+
     XLSX.writeFile(workbook, filename);
   } catch (error) {
     console.error('Error exporting to Excel:', error);
@@ -122,36 +125,36 @@ export const exportToPDF = (data, filters) => {
       // Urutkan berdasarkan tanggal (descending - terbaru dulu)
       const dateA = new Date(a.date);
       const dateB = new Date(b.date);
-      
-      if (dateA > dateB) return -1;
-      if (dateA < dateB) return 1;
-      
+
+      if (dateA < dateB) return -1;
+      if (dateA > dateB) return 1;
+
       // Jika tanggal sama, urutkan berdasarkan waktu mulai
       const timeA = a.timeStart || a.timeSlot?.split('-')[0] || '';
       const timeB = b.timeStart || b.timeSlot?.split('-')[0] || '';
-      
+
       if (timeA < timeB) return -1;
       if (timeA > timeB) return 1;
-      
+
       return 0;
     });
 
     // Fungsi untuk menghitung durasi dalam menit
     const calculateDuration = (startTime, endTime) => {
       if (!startTime || !endTime) return 0;
-      
+
       try {
         // Parse waktu dari format HH:MM
         const [startHour, startMinute] = startTime.split(':').map(Number);
         const [endHour, endMinute] = endTime.split(':').map(Number);
-        
+
         // Hitung total menit dari waktu mulai dan selesai
         const startTotalMinutes = startHour * 60 + startMinute;
         const endTotalMinutes = endHour * 60 + endMinute;
-        
+
         // Hitung selisih
         const durationMinutes = endTotalMinutes - startTotalMinutes;
-        
+
         // Pastikan durasi tidak negatif
         return durationMinutes > 0 ? durationMinutes : 0;
       } catch (error) {
@@ -162,7 +165,7 @@ export const exportToPDF = (data, filters) => {
 
     // Create PDF document
     const doc = new jsPDF();
-    
+
     // Set document properties
     doc.setProperties({
       title: 'Laporan Presensi Bimbel',
@@ -176,34 +179,36 @@ export const exportToPDF = (data, filters) => {
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
     doc.text('LAPORAN PRESENSI BIMBEL', 105, 15, { align: 'center' });
-    
+
     // Filter info
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     let filterText = 'Semua Data';
-    
+
     if (filters.month && filters.year) {
       const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-                         'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
       filterText = `Bulan: ${monthNames[parseInt(filters.month) - 1]} ${filters.year}`;
     }
-    
+
     if (filters.tutor) filterText += ` | Tutor: ${filters.tutor}`;
     if (filters.classType) filterText += ` | Kelas: ${filters.classType}`;
     if (filters.educationLevel) filterText += ` | Tingkat: ${filters.educationLevel}`;
     if (filters.location) filterText += ` | Tempat: ${filters.location}`;
-    
+
     // Split long filter text into multiple lines if needed
     const maxWidth = 180;
     const splitFilterText = doc.splitTextToSize(filterText, maxWidth);
     doc.text(splitFilterText, 105, 22, { align: 'center' });
 
-    // Prepare table data - TAMBAH KOLOM DURASI
+
+
+    // Prepare table data
     const tableData = sortedData.map((item, index) => {
       const startTime = item.timeStart || item.timeSlot?.split('-')[0] || '';
       const endTime = item.timeEnd || item.timeSlot?.split('-')[1] || '';
       const durationMinutes = calculateDuration(startTime, endTime);
-      
+
       return [
         (index + 1).toString(),
         new Date(item.date).toLocaleDateString('id-ID', { weekday: 'long' }),
@@ -215,11 +220,17 @@ export const exportToPDF = (data, filters) => {
         item.location || '-',
         startTime,
         endTime,
-        durationMinutes.toString(), // KOLOM BARU: Durasi
+        durationMinutes.toString(),
         item.status || '-',
         item.notes || '-'
       ];
     });
+
+    // Filter out null cells in the data? No, autotable expects columns.
+    // If we pass null, it might render empty.
+    // When using rowspan, the "spanned over" cells should ideally not be drawn or have their content ignored.
+    // jspdf-autotable handles this if we use the object syntax on the first cell. 
+    // The subsequent cells in that column for the next rows SHOULD exist but can be empty/ignored.
 
     // Calculate startY based on filter text height
     const filterTextHeight = splitFilterText.length * 5;
@@ -234,13 +245,13 @@ export const exportToPDF = (data, filters) => {
       ],
       body: tableData,
       theme: 'grid',
-      styles: { 
+      styles: {
         fontSize: 7,
         cellPadding: 2,
         lineColor: [0, 0, 0],
         lineWidth: 0.1
       },
-      headStyles: { 
+      headStyles: {
         fillColor: [41, 128, 185],
         textColor: [255, 255, 255],
         fontStyle: 'bold',
@@ -260,7 +271,7 @@ export const exportToPDF = (data, filters) => {
         7: { cellWidth: 15, halign: 'center' },  // Tempat
         8: { cellWidth: 13, halign: 'center' },  // Mulai
         9: { cellWidth: 13, halign: 'center' },  // Selesai
-        10: { cellWidth: 12, halign: 'center' }, // Durasi - KOLOM BARU
+        10: { cellWidth: 12, halign: 'center' }, // Durasi
         11: { cellWidth: 12, halign: 'center' }, // Status
         12: { cellWidth: 15 }                    // Catatan
       },
@@ -286,7 +297,7 @@ export const exportToPDF = (data, filters) => {
 
     // Save PDF
     doc.save(filename);
-    
+
   } catch (error) {
     console.error('Error exporting to PDF:', error);
     alert('Error saat mengexport ke PDF: ' + error.message);

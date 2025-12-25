@@ -9,6 +9,11 @@ const StudentTable = ({
     onCopyToClipboard,
     onAddFirst
 }) => {
+    // Sort students alphabetically
+    const sortedStudents = [...students].sort((a, b) =>
+        (a.name || '').localeCompare(b.name || '')
+    );
+
     if (students.length === 0) {
         return (
             <div className="no-data">
@@ -45,7 +50,7 @@ const StudentTable = ({
             <div className="table-actions">
                 <button
                     className="excel-btn"
-                    onClick={() => onCopyToClipboard(JSON.stringify(students.map(s => s.name)))}
+                    onClick={() => onCopyToClipboard(JSON.stringify(sortedStudents.map(s => s.name)))}
                     title="Salin daftar nama ke clipboard"
                 >
                     📋 Salin Daftar
@@ -66,7 +71,7 @@ const StudentTable = ({
                         </tr>
                     </thead>
                     <tbody>
-                        {students.map((student, index) => (
+                        {sortedStudents.map((student, index) => (
                             <tr key={student.id}>
                                 <td>{index + 1}</td>
                                 <td>

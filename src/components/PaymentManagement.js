@@ -11,6 +11,7 @@ const PaymentManagement = () => {
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
     const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1); // 1-12
     const [paymentStatusFilter, setPaymentStatusFilter] = useState('all'); // 'all', 'unpaid' (includes overdue)
+    const [selectedIds, setSelectedIds] = useState([]); // Array of string IDs
 
     // Modal States
     const [showDetailModal, setShowDetailModal] = useState(false);
@@ -66,13 +67,76 @@ const PaymentManagement = () => {
     const loadStudents = async () => {
         setLoading(true);
         try {
-            const data = await getStudentsDetail();
+            // Load ALL students including deleted ones so pyament history is preserved
+            const data = await getStudentsDetail(true);
             setStudents(data);
         } catch (err) {
             setError('Gagal memuat data siswa');
             console.error(err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDelete = async (student) => {
+        if (window.confirm(`⚠️ PERINGATAN: Apakah Anda yakin ingin menghapus data "${student.name}" secara PERMANEN?\n\nGunakan ini hanya untuk menghapus data DUPLIKAT yang salah. Data yang dihapus tidak bisa dikembalikan.`)) {
+            try {
+                const { hardDeleteStudent } = require('../services/database'); // Late import
+                const success = await hardDeleteStudent(student.id);
+                if (success) {
+                    alert('Data berhasil dihapus permanen.');
+                    loadStudents();
+                } else {
+                    alert('Gagal menghapus data.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Terjadi kesalahan saat menghapus.');
+            }
+        }
+    };
+
+    // Bulk Action Handlers
+    const handleSelectAll = (e) => {
+        if (e.target.checked) {
+            const allIds = filteredStudents.map(s => s.id);
+            setSelectedIds(allIds);
+        } else {
+            setSelectedIds([]);
+        }
+    };
+
+    const handleSelectStudent = (id) => {
+        setSelectedIds(prev => {
+            if (prev.includes(id)) {
+                return prev.filter(item => item !== id);
+            } else {
+                return [...prev, id];
+            }
+        });
+    };
+
+    const handleBulkDelete = async () => {
+        if (selectedIds.length === 0) return;
+
+        if (window.confirm(`⚠️ PERINGATAN EKTREM: Anda akan menghapus ${selectedIds.length} data siswa secara PERMANEN.\n\nData yang dihapus TIDAK BISA DIKEMBALIKAN.\n\nApakah Anda yakin ingin melanjutkan?`)) {
+            try {
+                const { hardDeleteStudentsBatch } = require('../services/database');
+                setLoading(true);
+                const success = await hardDeleteStudentsBatch(selectedIds);
+                if (success) {
+                    alert(`Berhasil menghapus ${selectedIds.length} data.`);
+                    setSelectedIds([]);
+                    loadStudents();
+                } else {
+                    alert('Gagal melakukan penghapusan massal.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Terjadi kesalahan sistem.');
+            } finally {
+                setLoading(false);
+            }
         }
     };
 
@@ -246,7 +310,7 @@ const PaymentManagement = () => {
         }
 
         return true;
-    });
+    }).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
     if (loading) return <div className="loading">Memuat data...</div>;
     if (error) return <div className="error-message">{error}</div>;
@@ -324,9 +388,36 @@ const PaymentManagement = () => {
 
             {/* MAIN LIST VIEW */}
             <div className="table-container">
+                {selectedIds.length > 0 && (
+                    <div style={{ padding: '10px 0', display: 'flex', gap: '10px', alignItems: 'center', background: '#fee2e2', paddingLeft: '10px', borderRadius: '4px', marginBottom: '10px' }}>
+                        <span style={{ fontWeight: 'bold', color: '#dc2626' }}>{selectedIds.length} data terpilih</span>
+                        <button
+                            onClick={handleBulkDelete}
+                            style={{
+                                backgroundColor: '#dc2626',
+                                color: 'white',
+                                border: 'none',
+                                padding: '6px 12px',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontWeight: 'bold'
+                            }}
+                        >
+                            🗑️ Hapus Terpilih Permanen
+                        </button>
+                    </div>
+                )}
+
                 <table className="payment-table">
                     <thead>
                         <tr>
+                            <th style={{ width: '40px', textAlign: 'center' }}>
+                                <input
+                                    type="checkbox"
+                                    onChange={handleSelectAll}
+                                    checked={filteredStudents.length > 0 && selectedIds.length === filteredStudents.length}
+                                />
+                            </th>
                             <th>Nama Siswa</th>
                             <th>Tingkat</th>
                             <th>Tanggal Daftar</th>
@@ -338,12 +429,19 @@ const PaymentManagement = () => {
                     </thead>
                     <tbody>
                         {filteredStudents.map(student => {
-                            const { status, label, date, isOverdue } = getPaymentStatus(student, selectedMonth, selectedYear);
+                            const { status, label, date } = getPaymentStatus(student, selectedMonth, selectedYear);
                             const deadlineDate = getDeadline(student, selectedMonth, selectedYear);
 
                             return (
-                                <tr key={student.id}>
-                                    <td className={isOverdue ? 'text-danger font-bold' : ''}>
+                                <tr key={student.id} className={status === 'pending' || status === 'overdue' ? 'row-unpaid' : ''}>
+                                    <td style={{ textAlign: 'center' }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedIds.includes(student.id)}
+                                            onChange={() => handleSelectStudent(student.id)}
+                                        />
+                                    </td>
+                                    <td className={(status === 'pending' || status === 'overdue') ? 'cell-danger' : ''}>
                                         <strong>{student.name}</strong>
                                     </td>
                                     <td>{student.educationLevel || '-'}</td>
@@ -389,8 +487,21 @@ const PaymentManagement = () => {
                                         <button
                                             className="detail-btn"
                                             onClick={() => openDetailModal(student)}
+                                            style={{ marginRight: '5px' }}
                                         >
                                             Detail
+                                        </button>
+                                        <button
+                                            className="detail-btn"
+                                            onClick={() => handleDelete(student)}
+                                            style={{
+                                                backgroundColor: '#ef4444',
+                                                color: 'white',
+                                                border: 'none'
+                                            }}
+                                            title="Hapus Permanen (untuk duplikat)"
+                                        >
+                                            Hapus
                                         </button>
                                     </td>
                                 </tr>
