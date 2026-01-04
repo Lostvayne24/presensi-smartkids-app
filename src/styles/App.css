@@ -2940,3 +2940,341 @@ tr:hover {
     margin: 0;
   }
 }
+
+/* Student Table Specific Styles from StudentTable.js */
+.student-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 800px;
+  /* Ensure scroll triggers on mobile */
+  background: white;
+}
+
+.student-table th,
+.student-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: top;
+  /* Align top for consistent look with multi-line notes */
+}
+
+.student-table th {
+  background: #f8fafc;
+  color: var(--text-primary);
+  font-weight: 700;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 2px solid var(--border-color);
+  white-space: nowrap;
+}
+
+/* Notes Column Styling - Fix for Mobile Overflow */
+.notes-cell {
+  max-width: 250px;
+  white-space: normal;
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+  .notes-cell {
+    max-width: 150px;
+    /* More constrained on mobile to prevent massive row height or blowout */
+    font-size: 0.85rem;
+  }
+
+  .student-table th,
+  .student-table td {
+    padding: 0.75rem;
+    /* Compact padding on mobile */
+  }
+}
+
+/* Student Stats Modern Styles */
+.stats-container {
+  padding: 1rem;
+}
+
+.main-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card-modern {
+  padding: 1.5rem;
+  border-radius: 12px;
+  background: white;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.stat-card-modern:hover {
+  transform: translateY(-2px);
+}
+
+.stat-card-modern.primary {
+  border-left: 5px solid var(--primary-blue);
+}
+
+.stat-card-modern.success {
+  border-left: 5px solid var(--secondary-green);
+}
+
+.stat-card-modern.warning {
+  border-left: 5px solid var(--warning-orange);
+}
+
+.stat-icon {
+  font-size: 2.5rem;
+  background: #f8fafc;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.stat-value-big {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label-modern {
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+/* Education Levels Grid */
+.education-levels-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.edu-card {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
+}
+
+.edu-card .count {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-blue);
+  margin-bottom: 0.25rem;
+}
+
+.edu-card .label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+/* Additional Stats - Flex Layout Fix */
+.additional-stats-modern {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+  /* NEW: Allow wrapping */
+}
+
+.mini-stat-item {
+  flex: 1;
+  min-width: 150px;
+  /* Ensure minimum width before wrap */
+  background: white;
+  padding: 1rem;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
+}
+
+.mini-stat-icon {
+  font-size: 1.5rem;
+  background: #eff6ff;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.mini-stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.mini-stat-info strong {
+  font-size: 1.25rem;
+  color: var(--text-primary);
+}
+
+.mini-stat-info span {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.2;
+}
+
+/* Mobile specific for Stats */
+@media (max-width: 600px) {
+  .additional-stats-modern {
+    flex-direction: column;
+    /* Stack vertically on small screens */
+  }
+
+  .mini-stat-item {
+    width: 100%;
+    /* Full width */
+  }
+}
+
+/* Modern Filter Section Styles */
+.filter-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+  border: 1px solid var(--border-color);
+}
+
+.filter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.filter-header h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-controls {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+  width: 100%;
+}
+
+.filter-buttons {
+  display: flex;
+  background: #f1f5f9;
+  padding: 0.25rem;
+  border-radius: 8px;
+  gap: 0.25rem;
+}
+
+.filter-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.filter-btn.active {
+  background: white;
+  color: var(--primary-blue);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-weight: 600;
+}
+
+.filter-btn:hover:not(.active) {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.date-inputs-container {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.date-inputs-container input[type="date"] {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-family: inherit;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.2s;
+  background: #f8fafc;
+}
+
+.date-inputs-container input[type="date"]:focus {
+  border-color: var(--primary-blue);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.date-separator {
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 600px) {
+  .filter-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-buttons {
+    flex-direction: column;
+    /* Stack tabs on mobile or keep horizontal scroll? Stack is safer */
+    width: 100%;
+  }
+
+  .filter-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .date-inputs-container {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .date-inputs-container input[type="date"] {
+    width: 100%;
+  }
+}

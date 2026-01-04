@@ -103,6 +103,7 @@ export const exportToExcel = (data, filters) => {
     const month = filters.month || 'all';
     const year = filters.year || 'all';
     const tutor = filters.tutor ? `_${filters.tutor.replace(/\s+/g, '_')}` : '';
+
     const filename = `presensi_bimbel_${month}_${year}${tutor}.xlsx`;
 
     XLSX.writeFile(workbook, filename);
@@ -293,6 +294,7 @@ export const exportToPDF = (data, filters) => {
     const year = filters.year || 'all';
     const tutor = filters.tutor ? `_${filters.tutor.replace(/\s+/g, '_')}` : '';
     const classType = filters.classType ? `_${filters.classType.replace(/\s+/g, '_')}` : '';
+
     const filename = `presensi_bimbel_${month}_${year}${tutor}${classType}.pdf`;
 
     // Save PDF

@@ -57,7 +57,7 @@ const StudentTable = ({
                 </button>
             </div>
             <div className="table-container">
-                <table>
+                <table className="student-table">
                     <thead>
                         <tr>
                             <th>No</th>

@@ -164,17 +164,7 @@ const PaymentManagement = () => {
             deadline.setDate(0);
         }
 
-        // Deadline logic:
-        // If reg Jan 15.
-        // Payment for Jan period?
-        // Let's assume billing period = month.
-        // Deadline = 1 month from start of billing period? Or from registration date relative to month?
-        // Let's stick to previous visualized logic:
-        // Deadline for Month X = Same Day of Month X + 1.
-        const billingDeadline = new Date(deadline);
-        billingDeadline.setMonth(billingDeadline.getMonth() + 1);
-
-        return billingDeadline;
+        return deadline;
     };
 
     const getPaymentStatus = (student, month, year) => {
