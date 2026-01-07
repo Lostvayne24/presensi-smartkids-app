@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { getStudents, getClasses, saveMultipleAttendance } from '../services/database';
+import { getStudentsDetail, getClasses, saveMultipleAttendance } from '../services/database';
 
-const AttendanceForm = ({ user, onSuccess }) => {
+const AttendanceForm = ({ user, onSuccess, allowManualDate = false, tutors = [], enableTutorSelection = false }) => {
   const [sessionForm, setSessionForm] = useState({
     date: new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().split('T')[0],
     educationLevel: '',
@@ -9,7 +9,8 @@ const AttendanceForm = ({ user, onSuccess }) => {
     location: '',
     timeStart: '',
     timeEnd: '',
-    status: 'Hadir'
+    status: 'Hadir',
+    tutor: user.name || ''
   });
 
   const [students, setStudents] = useState([]);
@@ -35,8 +36,11 @@ const AttendanceForm = ({ user, onSuccess }) => {
     const loadInitialData = async () => {
       try {
         setLoading(true);
-        const studentList = await getStudents();
+        const studentList = await getStudentsDetail();
         const classList = getClasses();
+        // Filter out deleted students if getStudentsDetail includes them (it has a param or defaults)
+        // Check `getStudentsDetail` impl: defaults to !isDeleted. Good.
+        // We need to keep full objects.
         setStudents(studentList);
         setFilteredStudents(studentList);
         setClasses(classList);
@@ -138,7 +142,7 @@ const AttendanceForm = ({ user, onSuccess }) => {
     }
 
     const filtered = students.filter(student =>
-      student && student.toLowerCase().includes(searchTerm.toLowerCase())
+      student && student.name && student.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredStudents(filtered);
   };
@@ -151,7 +155,17 @@ const AttendanceForm = ({ user, onSuccess }) => {
   };
 
   const handleStudentSelect = (student) => {
-    setCurrentStudent(student);
+    // Validasi Status Siswa
+    if (student.status === 'Cuti') {
+      alert(`Siswa ${student.name} sedang CUTI. Tidak dapat dipilih.`);
+      return;
+    }
+    if (student.status === 'Off') {
+      alert(`Siswa ${student.name} statusnya OFF. Tidak dapat dipilih.`);
+      return;
+    }
+
+    setCurrentStudent(student.name);
     setShowStudentDropdown(false);
   };
 
@@ -285,7 +299,7 @@ const AttendanceForm = ({ user, onSuccess }) => {
       studentName: currentStudent,
       status: sessionForm.status,
       notes: currentNotes,
-      tutor: user.name,
+      tutor: sessionForm.tutor || user.name,
       timestamp: new Date().toISOString(),
       isDraft: true
     };
@@ -328,7 +342,8 @@ const AttendanceForm = ({ user, onSuccess }) => {
       location: '',
       timeStart: '',
       timeEnd: '',
-      status: 'Hadir'
+      status: 'Hadir',
+      tutor: enableTutorSelection ? (sessionForm.tutor || user.name) : user.name
     });
     setActiveSession(null);
     setAvailableTimeSlots([]);
@@ -369,7 +384,8 @@ const AttendanceForm = ({ user, onSuccess }) => {
           location: '',
           timeStart: '',
           timeEnd: '',
-          status: 'Hadir'
+          status: 'Hadir',
+          tutor: enableTutorSelection ? (sessionForm.tutor || user.name) : user.name
         });
         setCurrentStudent('');
         setCurrentNotes('');
@@ -424,9 +440,11 @@ const AttendanceForm = ({ user, onSuccess }) => {
             <label>Tanggal:</label>
             <input
               type="date"
+              name="date"
               value={sessionForm.date}
-              readOnly
-              className="readonly-date"
+              onChange={handleSessionFormChange}
+              readOnly={!allowManualDate}
+              className={!allowManualDate ? "readonly-date" : "form-control"}
             />
           </div>
 
@@ -479,6 +497,31 @@ const AttendanceForm = ({ user, onSuccess }) => {
             </select>
           </div>
         </div>
+
+
+        {/* KOLOM TUTOR (KHUSUS ADMIN) */}
+        {enableTutorSelection && (
+          <div className="form-row">
+            <div className="form-group">
+              <label>Tutor:</label>
+              <select
+                name="tutor"
+                value={sessionForm.tutor}
+                onChange={handleSessionFormChange}
+                required
+              >
+                <option value="">Pilih Tutor</option>
+                {tutors && tutors.length > 0 ? (
+                  tutors.map((t, index) => (
+                    <option key={index} value={t.name}>{t.name}</option>
+                  ))
+                ) : (
+                  <option value={user.name}>{user.name}</option>
+                )}
+              </select>
+            </div>
+          </div>
+        )}
 
         {/* OPSI WAKTU - DENGAN 2 PILIHAN */}
         <div className="form-row">
@@ -596,117 +639,129 @@ const AttendanceForm = ({ user, onSuccess }) => {
       </div>
 
       {/* Form Input Siswa */}
-      {sessionForm.timeStart && sessionForm.timeEnd && (
-        <div className="student-input-section">
-          <h4>
-            Tambah Siswa ke Sesi: {sessionForm.timeStart} - {sessionForm.timeEnd}
-            {activeSession && ` (${draftAttendances.filter(d =>
-              d.timeStart === activeSession.timeStart && d.timeEnd === activeSession.timeEnd
-            ).length} siswa)`}
-          </h4>
+      {
+        sessionForm.timeStart && sessionForm.timeEnd && (
+          <div className="student-input-section">
+            <h4>
+              Tambah Siswa ke Sesi: {sessionForm.timeStart} - {sessionForm.timeEnd}
+              {activeSession && ` (${draftAttendances.filter(d =>
+                d.timeStart === activeSession.timeStart && d.timeEnd === activeSession.timeEnd
+              ).length} siswa)`}
+            </h4>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label>Nama Siswa:</label>
-              <div className="searchable-dropdown">
+            <div className="form-row">
+              <div className="form-group">
+                <label>Nama Siswa:</label>
+                <div className="searchable-dropdown">
+                  <input
+                    type="text"
+                    value={currentStudent}
+                    onChange={handleStudentInputChange}
+                    onFocus={() => setShowStudentDropdown(true)}
+                    placeholder="Ketik nama siswa atau pilih dari daftar"
+                    required
+                    disabled={loading}
+                  />
+                  {showStudentDropdown && Array.isArray(filteredStudents) && filteredStudents.length > 0 && (
+                    <div className="dropdown-list">
+                      {filteredStudents.map((student, index) => (
+                        <div
+                          key={index}
+                          className="student-option"
+                          onClick={() => handleStudentSelect(student)}
+                        >
+                          <div className="student-name">{student.name}</div>
+                          <div className="student-info">
+                            {student.class && <span className="student-class">{student.class}</span>}
+                            {student.status && student.status !== 'Aktif' && (
+                              <span className={`status-badge-small ${student.status.toLowerCase()}`}>
+                                {student.status}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {showStudentDropdown && Array.isArray(filteredStudents) && filteredStudents.length === 0 && currentStudent && (
+                    <div className="dropdown-list">
+                      <div className="dropdown-item no-results">Tidak ada siswa yang cocok</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Catatan:</label>
                 <input
                   type="text"
-                  value={currentStudent}
-                  onChange={handleStudentInputChange}
-                  onFocus={() => setShowStudentDropdown(true)}
-                  placeholder="Ketik nama siswa atau pilih dari daftar"
-                  required
-                  disabled={loading}
+                  value={currentNotes}
+                  onChange={(e) => setCurrentNotes(e.target.value)}
+                  placeholder="Catatan khusus untuk siswa ini..."
                 />
-                {showStudentDropdown && Array.isArray(filteredStudents) && filteredStudents.length > 0 && (
-                  <div className="dropdown-list">
-                    {filteredStudents.map((student, index) => (
-                      <div
-                        key={index}
-                        className="dropdown-item"
-                        onClick={() => handleStudentSelect(student)}
-                      >
-                        {student}
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {showStudentDropdown && Array.isArray(filteredStudents) && filteredStudents.length === 0 && currentStudent && (
-                  <div className="dropdown-list">
-                    <div className="dropdown-item no-results">Tidak ada siswa yang cocok</div>
-                  </div>
-                )}
               </div>
             </div>
 
-            <div className="form-group">
-              <label>Catatan:</label>
-              <input
-                type="text"
-                value={currentNotes}
-                onChange={(e) => setCurrentNotes(e.target.value)}
-                placeholder="Catatan khusus untuk siswa ini..."
-              />
-            </div>
-          </div>
-
-          <button
-            type="button"
-            className="btn-primary"
-            onClick={addStudentToDraft}
-            disabled={!currentStudent}
-          >
-            Tambah ke Draft
-          </button>
-        </div>
-      )}
-
-      {/* Daftar Draft */}
-      {draftAttendances.length > 0 && (
-        <div className="draft-section">
-          <h4>Draft Presensi ({draftAttendances.length} siswa)</h4>
-
-          {Object.entries(draftGroups).map(([sessionKey, attendances]) => (
-            <div key={sessionKey} className="session-draft-group">
-              <h5>Sesi: {sessionKey} ({attendances.length} siswa)</h5>
-              <div className="draft-list">
-                {attendances.map((attendance, index) => (
-                  <div key={attendance.id} className="draft-item">
-                    <div className="draft-info">
-                      <span className="student-name">{attendance.studentName}</span>
-                      <span className="session-info">
-                        {attendance.classType} - {attendance.location} - {attendance.educationLevel}
-                      </span>
-                      {attendance.notes && (
-                        <span className="notes">Catatan: {attendance.notes}</span>
-                      )}
-                    </div>
-                    <button
-                      type="button"
-                      className="btn-remove"
-                      onClick={() => removeStudentFromDraft(attendance.id)}
-                    >
-                      Hapus
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-
-          <div className="draft-actions">
             <button
               type="button"
-              className="btn-save-all"
-              onClick={saveAllDrafts}
-              disabled={loading}
+              className="btn-primary"
+              onClick={addStudentToDraft}
+              disabled={!currentStudent}
             >
-              {loading ? 'Menyimpan...' : `Simpan Semua (${draftAttendances.length})`}
+              Tambah ke Draft
             </button>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+
+      {/* Daftar Draft */}
+      {
+        draftAttendances.length > 0 && (
+          <div className="draft-section">
+            <h4>Draft Presensi ({draftAttendances.length} siswa)</h4>
+
+            {Object.entries(draftGroups).map(([sessionKey, attendances]) => (
+              <div key={sessionKey} className="session-draft-group">
+                <h5>Sesi: {sessionKey} ({attendances.length} siswa)</h5>
+                <div className="draft-list">
+                  {attendances.map((attendance, index) => (
+                    <div key={attendance.id} className="draft-item">
+                      <div className="draft-info">
+                        <span className="student-name">{attendance.studentName}</span>
+                        <span className="session-info">
+                          {attendance.classType} - {attendance.location} - {attendance.educationLevel}
+                        </span>
+                        {attendance.notes && (
+                          <span className="notes">Catatan: {attendance.notes}</span>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        className="btn-remove"
+                        onClick={() => removeStudentFromDraft(attendance.id)}
+                      >
+                        Hapus
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            <div className="draft-actions">
+              <button
+                type="button"
+                className="btn-save-all"
+                onClick={saveAllDrafts}
+                disabled={loading}
+              >
+                {loading ? 'Menyimpan...' : `Simpan Semua (${draftAttendances.length})`}
+              </button>
+            </div>
+          </div>
+        )
+      }
+    </div >
   );
 };
 

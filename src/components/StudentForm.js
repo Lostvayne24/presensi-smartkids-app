@@ -43,6 +43,22 @@ const StudentForm = ({
 
                 <div className="form-row">
                     <div className="form-group">
+                        <label>Status Siswa</label>
+                        <select
+                            name="status"
+                            value={initialData.status || 'Aktif'}
+                            onChange={onChange}
+                        >
+                            <option value="Aktif">Aktif</option>
+                            <option value="Cuti">Cuti</option>
+                            <option value="Off">Off</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <div className="form-row">
+                    <div className="form-group">
                         <label>Kelas</label>
                         <input
                             type="text"

@@ -410,10 +410,11 @@ const PaymentManagement = () => {
                             </th>
                             <th>Nama Siswa</th>
                             <th>Tingkat</th>
+                            <th>Status Siswa</th>
                             <th>Tanggal Daftar</th>
                             <th>Deadline</th>
                             <th>Tanggal Bayar</th>
-                            <th>Status</th>
+                            <th>Status Bayar</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -435,6 +436,11 @@ const PaymentManagement = () => {
                                         <strong>{student.name}</strong>
                                     </td>
                                     <td>{student.educationLevel || '-'}</td>
+                                    <td>
+                                        <span className={`status-badge-small ${student.status?.toLowerCase() || 'aktif'}`}>
+                                            {student.status || 'Aktif'}
+                                        </span>
+                                    </td>
                                     <td>
                                         <input
                                             type="date"

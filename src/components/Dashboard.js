@@ -7,6 +7,7 @@ import ExportButtons from './ExportButtons';
 import UserManagement from './UserManagement';
 import StudentManagement from './StudentManagement';
 import PaymentManagement from './PaymentManagement';
+import AttendanceForm from './AttendanceForm';
 
 const Dashboard = ({ user }) => {
   const [attendanceData, setAttendanceData] = useState([]);
@@ -31,6 +32,9 @@ const Dashboard = ({ user }) => {
 
   // STATE BARU: Daftar nama siswa unik untuk autocomplete
   const [studentNames, setStudentNames] = useState([]);
+
+  // STATE BARU: Modal Tambah Presensi
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Load daftar tutor dari sistem user management
   const loadTutors = useCallback(async () => {
@@ -158,6 +162,19 @@ const Dashboard = ({ user }) => {
     totalSessions: filteredData.length,
     presentCount: filteredData.filter(item => item.status === 'Hadir').length,
     absentCount: filteredData.filter(item => item.status === 'Tidak Hadir').length
+  };
+
+  const handleAddAttendance = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleAttendanceSuccess = () => {
+    handleCloseModal();
+    loadAttendanceData();
   };
 
   return (
@@ -381,7 +398,9 @@ const Dashboard = ({ user }) => {
             data={currentData}
             onUpdate={loadAttendanceData}
             isAdmin={true}
+            onAdd={handleAddAttendance}
           />
+
 
           {/* Pagination Controls - Tampilkan juga di bawah tabel */}
           {totalPages > 1 && (
@@ -415,7 +434,26 @@ const Dashboard = ({ user }) => {
       ) : (
         <UserManagement onUserUpdate={loadTutors} />
       )}
-    </div>
+
+
+      {/* Modal Tambah Presensi */}
+      {
+        isModalOpen && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <button className="modal-close-btn" onClick={handleCloseModal}>×</button>
+              <AttendanceForm
+                user={user}
+                onSuccess={handleAttendanceSuccess}
+                allowManualDate={true}
+                tutors={tutors}
+                enableTutorSelection={true}
+              />
+            </div>
+          </div>
+        )
+      }
+    </div >
   );
 };
 

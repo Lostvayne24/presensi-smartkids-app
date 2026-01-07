@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { deleteAttendance, updateAttendance, deleteAllAttendance, getClasses } from '../services/database';
 
-const AttendanceTable = ({ data, onUpdate, isAdmin = false }) => {
+const AttendanceTable = ({ data, onUpdate, isAdmin = false, onAdd }) => {
   // State for inline editing
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({
@@ -255,14 +255,25 @@ const AttendanceTable = ({ data, onUpdate, isAdmin = false }) => {
           <>
             <div className="table-header-actions">
               <h3>Data Presensi ({attendanceData.length} data)</h3>
-              {isAdmin && attendanceData.length > 0 && (
-                <button
-                  className="delete-all-btn"
-                  onClick={handleDeleteAll}
-                  style={{ backgroundColor: '#dc2626', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
-                >
-                  Hapus Semua Data
-                </button>
+              {isAdmin && (
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    className="add-btn"
+                    onClick={onAdd}
+                    style={{ backgroundColor: '#10b981', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+                  >
+                    + Tambah Presensi
+                  </button>
+                  {attendanceData.length > 0 && (
+                    <button
+                      className="delete-all-btn"
+                      onClick={handleDeleteAll}
+                      style={{ backgroundColor: '#dc2626', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+                    >
+                      Hapus Semua Data
+                    </button>
+                  )}
+                </div>
               )}
             </div>
             <div className="table-container">

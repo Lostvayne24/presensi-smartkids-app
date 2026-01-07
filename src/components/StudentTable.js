@@ -63,6 +63,7 @@ const StudentTable = ({
                             <th>No</th>
                             <th>Nama Siswa</th>
                             <th>Tingkat</th>
+                            <th>Status</th>
                             <th>Kelas</th>
                             <th>No. Telepon</th>
                             <th>Orang Tua</th>
@@ -80,6 +81,11 @@ const StudentTable = ({
                                 <td>
                                     <span className={`badge ${student.educationLevel?.toLowerCase() || 'unknown'}`}>
                                         {student.educationLevel || '-'}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span className={`status-badge ${student.status?.toLowerCase() || 'aktif'}`}>
+                                        {student.status || 'Aktif'}
                                     </span>
                                 </td>
                                 <td>{student.class || '-'}</td>
