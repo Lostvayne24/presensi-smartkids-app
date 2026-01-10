@@ -69,7 +69,7 @@ export const exportToExcel = (data, filters) => {
         'Durasi (menit)': durationMinutes,
         'Status': item.status,
         'Catatan': item.notes,
-        'Waktu Input': new Date(item.timestamp).toLocaleString('id-ID')
+        // 'Waktu Input': new Date(item.timestamp).toLocaleString('id-ID')
       };
     });
 
@@ -95,7 +95,7 @@ export const exportToExcel = (data, filters) => {
       { wch: 12 },  // Durasi (menit)
       { wch: 10 },  // Status
       { wch: 25 },  // Catatan
-      { wch: 20 }   // Waktu Input
+      // { wch: 20 }   // Waktu Input
     ];
     worksheet['!cols'] = colWidths;
 
