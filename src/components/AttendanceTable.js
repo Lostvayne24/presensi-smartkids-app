@@ -12,7 +12,8 @@ const AttendanceTable = ({ data, onUpdate, isAdmin = false, onAdd }) => {
     timeEnd: '',
     studentName: '',
     classType: '',
-    location: ''
+    location: '',
+    educationLevel: ''
   });
 
   // State for filtering
@@ -72,7 +73,8 @@ const AttendanceTable = ({ data, onUpdate, isAdmin = false, onAdd }) => {
       timeEnd: item.timeEnd || '',
       studentName: item.studentName || '',
       classType: item.classType || '',
-      location: item.location || ''
+      location: item.location || '',
+      educationLevel: item.educationLevel || ''
     });
   };
 
@@ -85,7 +87,8 @@ const AttendanceTable = ({ data, onUpdate, isAdmin = false, onAdd }) => {
       timeEnd: '',
       studentName: '',
       classType: '',
-      location: ''
+      location: '',
+      educationLevel: ''
     });
   };
 
@@ -104,7 +107,8 @@ const AttendanceTable = ({ data, onUpdate, isAdmin = false, onAdd }) => {
         location: editForm.location,
         timeStart: editForm.timeStart,
         timeEnd: editForm.timeEnd,
-        timeSlot: `${editForm.timeStart} -${editForm.timeEnd} `
+        timeSlot: `${editForm.timeStart} -${editForm.timeEnd} `,
+        educationLevel: editForm.educationLevel
       };
 
       const success = await updateAttendance(id, updates);
