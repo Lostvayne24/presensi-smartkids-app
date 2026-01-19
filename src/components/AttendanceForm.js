@@ -276,14 +276,39 @@ const AttendanceForm = ({ user, onSuccess, allowManualDate = false, tutors = [],
   };
 
   // FUNGSI BARU: Tambah siswa ke draft sesi aktif
+  // FUNGSI BARU: Tambah siswa ke draft sesi aktif
   const addStudentToDraft = () => {
-    if (!currentStudent) {
-      alert('Harap pilih siswa terlebih dahulu');
+    // Validasi Kelengkapan Data Sesi
+    const requiredFields = [
+      { key: 'date', label: 'Tanggal' },
+      { key: 'educationLevel', label: 'Tingkat Pendidikan' },
+      { key: 'classType', label: 'Jenis Kelas' },
+      { key: 'location', label: 'Tempat' },
+      { key: 'status', label: 'Status Kehadiran' }
+    ];
+
+    for (const field of requiredFields) {
+      if (!sessionForm[field.key]) {
+        alert(`Mohon isi ${field.label} terlebih dahulu.`);
+        return;
+      }
+    }
+
+    // Validasi Tutor (jika seleksi tutor aktif)
+    if (enableTutorSelection && !sessionForm.tutor) {
+      alert('Mohon pilih Tutor terlebih dahulu.');
       return;
     }
 
+    // Validasi Waktu
     if (!sessionForm.timeStart || !sessionForm.timeEnd) {
       alert('Harap set waktu sesi terlebih dahulu');
+      return;
+    }
+
+    // Validasi Siswa
+    if (!currentStudent) {
+      alert('Harap pilih siswa terlebih dahulu');
       return;
     }
 
