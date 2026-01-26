@@ -1,9 +1,20 @@
 // components/WhatsAppRecap.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { getStudentsDetail } from '../services/database';
 
 const WhatsAppRecap = ({ attendanceData, tutorName }) => {
     const [copied, setCopied] = useState(false);
     const [selectedDate, setSelectedDate] = useState('');
+    const [studentsData, setStudentsData] = useState([]);
+
+    // Fetch student data to get class information
+    useEffect(() => {
+        const fetchStudents = async () => {
+            const students = await getStudentsDetail();
+            setStudentsData(students);
+        };
+        fetchStudents();
+    }, []);
 
     // Get unique dates from attendance data
     const getUniqueDates = () => {
@@ -27,6 +38,12 @@ const WhatsAppRecap = ({ attendanceData, tutorName }) => {
         return `${dayName}, ${day} ${month} ${year}`;
     };
 
+    // Format time from HH:MM to HH.MM
+    const formatTime = (timeString) => {
+        if (!timeString) return '';
+        return timeString.replace(/:/g, '.');
+    };
+
     // Generate WhatsApp recap text
     const generateRecapText = (date) => {
         if (!date) return '';
@@ -41,9 +58,17 @@ const WhatsAppRecap = ({ attendanceData, tutorName }) => {
 
         dayData.forEach(item => {
             const location = item.location || 'Lokasi tidak disebutkan';
-            const timeSlot = item.timeStart && item.timeEnd
-                ? `${item.timeStart} - ${item.timeEnd}`
-                : item.timeSlot || 'Waktu tidak disebutkan';
+
+            // Format time with dots instead of colons
+            let timeSlot;
+            if (item.timeStart && item.timeEnd) {
+                timeSlot = `${formatTime(item.timeStart)} - ${formatTime(item.timeEnd)}`;
+            } else if (item.timeSlot) {
+                // Also format existing timeSlot if it has colons
+                timeSlot = formatTime(item.timeSlot);
+            } else {
+                timeSlot = 'Waktu tidak disebutkan';
+            }
 
             // Initialize location group if not exists
             if (!locationGroups[location]) {
@@ -55,14 +80,33 @@ const WhatsAppRecap = ({ attendanceData, tutorName }) => {
                 locationGroups[location][timeSlot] = [];
             }
 
-            // Parse education level to extract number and level (e.g., "2 SD" from educationLevel)
+            // Get education level and class from student database
             let educationText = '';
-            if (item.educationLevel) {
-                // Check if classType contains a number (e.g., "Kelas 2", "2", etc.)
-                const classMatch = item.classType?.match(/\d+/);
-                const classNumber = classMatch ? classMatch[0] : '';
 
-                educationText = classNumber ? `${classNumber} ${item.educationLevel}` : item.educationLevel;
+            // Find student in database by name
+            const studentInfo = studentsData.find(s =>
+                s.name && item.studentName &&
+                s.name.toLowerCase().trim() === item.studentName.toLowerCase().trim()
+            );
+
+            if (studentInfo) {
+                // Use class and educationLevel from student database
+                if (studentInfo.class && studentInfo.educationLevel) {
+                    educationText = `${studentInfo.class} ${studentInfo.educationLevel}`;
+                } else if (studentInfo.educationLevel) {
+                    educationText = studentInfo.educationLevel;
+                } else if (studentInfo.class) {
+                    educationText = studentInfo.class;
+                }
+            } else {
+                // Fallback to attendance data if student not found in database
+                if (item.educationLevel) {
+                    // Check if classType contains a number (e.g., "Kelas 2", "2", etc.)
+                    const classMatch = item.classType?.match(/\d+/);
+                    const classNumber = classMatch ? classMatch[0] : '';
+
+                    educationText = classNumber ? `${classNumber} ${item.educationLevel}` : item.educationLevel;
+                }
             }
 
             locationGroups[location][timeSlot].push({
