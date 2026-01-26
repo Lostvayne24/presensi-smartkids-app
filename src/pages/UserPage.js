@@ -18,6 +18,8 @@ const UserPage = ({ user, onLogout }) => {
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [searchName, setSearchName] = useState(''); // Search filter
   const [studentNames, setStudentNames] = useState([]); // List of unique student names
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1); // Default to current month
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear()); // Default to current year
 
   const loadUserAttendance = useCallback(async () => {
     if (!user || !user.name) {
@@ -86,19 +88,47 @@ const UserPage = ({ user, onLogout }) => {
     loadUserAttendance();
   }, [loadUserAttendance, refreshTrigger]);
 
-  // Filter data by student name
+  // Filter data by month, year, and student name
   useEffect(() => {
-    if (!searchName.trim()) {
-      setFilteredData(attendanceData);
-    } else {
+    let filtered = [...attendanceData];
+
+    // Filter by month and year
+    filtered = filtered.filter(item => {
+      if (!item.date) return false;
+      const itemDate = new Date(item.date);
+      const itemMonth = itemDate.getMonth() + 1; // getMonth() returns 0-11
+      const itemYear = itemDate.getFullYear();
+
+      return itemMonth === selectedMonth && itemYear === selectedYear;
+    });
+
+    // Filter by student name
+    if (searchName.trim()) {
       const searchTerm = searchName.toLowerCase();
-      const filtered = attendanceData.filter(item =>
+      filtered = filtered.filter(item =>
         item.studentName && item.studentName.toLowerCase().includes(searchTerm)
       );
-      setFilteredData(filtered);
     }
-    setCurrentPage(1); // Reset to page 1 when search changes
-  }, [searchName, attendanceData]);
+
+    setFilteredData(filtered);
+
+    // Update student names list based on filtered month/year
+    const monthYearFiltered = attendanceData.filter(item => {
+      if (!item.date) return false;
+      const itemDate = new Date(item.date);
+      const itemMonth = itemDate.getMonth() + 1;
+      const itemYear = itemDate.getFullYear();
+      return itemMonth === selectedMonth && itemYear === selectedYear;
+    });
+
+    const uniqueNames = [...new Set(monthYearFiltered
+      .map(item => item.studentName)
+      .filter(name => name && name.trim() !== '')
+    )].sort();
+    setStudentNames(uniqueNames);
+
+    setCurrentPage(1); // Reset to page 1 when filters change
+  }, [searchName, attendanceData, selectedMonth, selectedYear]);
 
   const getCurrentPageData = () => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -153,11 +183,55 @@ const UserPage = ({ user, onLogout }) => {
 
           <AttendanceForm user={user} onSuccess={handleSuccess} />
 
+          {/* WhatsApp Recap - Only show if there's data */}
+          {attendanceData.length > 0 && (
+            <WhatsAppRecap
+              attendanceData={attendanceData}
+              tutorName={user?.name || 'Tutor'}
+            />
+          )}
+
           {/* Status Section */}
           <div className="data-status">
+            {/* Month and Year Filter */}
+            <div className="month-year-filter-section">
+              <h4>📅 Filter Periode</h4>
+              <div className="month-year-controls">
+                <div className="filter-group">
+                  <label htmlFor="month-select">Bulan:</label>
+                  <select
+                    id="month-select"
+                    value={selectedMonth}
+                    onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                    className="month-year-select"
+                  >
+                    {Array.from({ length: 12 }, (_, i) => (
+                      <option key={i + 1} value={i + 1}>
+                        {new Date(2000, i).toLocaleDateString('id-ID', { month: 'long' })}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="filter-group">
+                  <label htmlFor="year-select">Tahun:</label>
+                  <select
+                    id="year-select"
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(Number(e.target.value))}
+                    className="month-year-select"
+                  >
+                    {Array.from({ length: 5 }, (_, i) => {
+                      const year = new Date().getFullYear() - 2 + i;
+                      return <option key={year} value={year}>{year}</option>;
+                    })}
+                  </select>
+                </div>
+              </div>
+            </div>
+
             {/* Search Filter */}
             <div className="search-filter-section">
-              <label htmlFor="student-search">🔍 Cari Nama Siswa:</label>
+              <label htmlFor="student-search">🔍 Cari Nama Siswa (di bulan terpilih):</label>
               <div className="searchable-input">
                 <input
                   id="student-search"
@@ -234,14 +308,6 @@ const UserPage = ({ user, onLogout }) => {
               </div>
             )}
           </div>
-
-          {/* WhatsApp Recap - Only show if there's data */}
-          {attendanceData.length > 0 && (
-            <WhatsAppRecap
-              attendanceData={attendanceData}
-              tutorName={user?.name || 'Tutor'}
-            />
-          )}
 
           {/* Pagination Controls */}
           {totalPages > 1 && (
