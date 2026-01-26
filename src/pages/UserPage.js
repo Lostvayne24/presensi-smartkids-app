@@ -3,17 +3,21 @@ import React, { useState, useEffect, useCallback } from 'react';
 import AttendanceForm from '../components/AttendanceForm';
 import AttendanceTable from '../components/AttendanceTable';
 import ChangePassword from '../components/ChangePassword';
+import WhatsAppRecap from '../components/WhatsAppRecap';
 import { getAttendanceData } from '../services/database';
 import logo from '../assets/logo-smartkids.jpeg';
 
 const UserPage = ({ user, onLogout }) => {
   const [attendanceData, setAttendanceData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]); // For search results
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(20);
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const [searchName, setSearchName] = useState(''); // Search filter
+  const [studentNames, setStudentNames] = useState([]); // List of unique student names
 
   const loadUserAttendance = useCallback(async () => {
     if (!user || !user.name) {
@@ -51,6 +55,15 @@ const UserPage = ({ user, onLogout }) => {
       console.log(`✅ Validated and sorted data: ${validatedData.length} records`);
 
       setAttendanceData(validatedData);
+      setFilteredData(validatedData); // Initialize filtered data
+
+      // Extract unique student names for autocomplete
+      const uniqueNames = [...new Set(validatedData
+        .map(item => item.studentName)
+        .filter(name => name && name.trim() !== '')
+      )].sort();
+      setStudentNames(uniqueNames);
+
       setCurrentPage(1);
     } catch (err) {
       console.error('❌ Error loading attendance:', err);
@@ -73,13 +86,27 @@ const UserPage = ({ user, onLogout }) => {
     loadUserAttendance();
   }, [loadUserAttendance, refreshTrigger]);
 
+  // Filter data by student name
+  useEffect(() => {
+    if (!searchName.trim()) {
+      setFilteredData(attendanceData);
+    } else {
+      const searchTerm = searchName.toLowerCase();
+      const filtered = attendanceData.filter(item =>
+        item.studentName && item.studentName.toLowerCase().includes(searchTerm)
+      );
+      setFilteredData(filtered);
+    }
+    setCurrentPage(1); // Reset to page 1 when search changes
+  }, [searchName, attendanceData]);
+
   const getCurrentPageData = () => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    return attendanceData.slice(startIndex, endIndex);
+    return filteredData.slice(startIndex, endIndex);
   };
 
-  const totalPages = Math.ceil(attendanceData.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
@@ -128,6 +155,40 @@ const UserPage = ({ user, onLogout }) => {
 
           {/* Status Section */}
           <div className="data-status">
+            {/* Search Filter */}
+            <div className="search-filter-section">
+              <label htmlFor="student-search">🔍 Cari Nama Siswa:</label>
+              <div className="searchable-input">
+                <input
+                  id="student-search"
+                  type="text"
+                  className="student-search-input"
+                  placeholder="Ketik nama siswa untuk mencari..."
+                  value={searchName}
+                  onChange={(e) => setSearchName(e.target.value)}
+                  list="tutorStudentNamesList"
+                />
+                {searchName && (
+                  <button
+                    type="button"
+                    className="clear-filter-btn"
+                    onClick={() => setSearchName('')}
+                    title="Hapus Filter"
+                  >
+                    ×
+                  </button>
+                )}
+                <datalist id="tutorStudentNamesList">
+                  {studentNames.map((name, index) => (
+                    <option key={index} value={name} />
+                  ))}
+                </datalist>
+              </div>
+              <small className="form-hint">
+                {studentNames.length} siswa tersedia | {filteredData.length} data ditemukan
+              </small>
+            </div>
+
             {loading && (
               <div className="loading">
                 <span>Memuat data presensi...</span>
@@ -142,10 +203,28 @@ const UserPage = ({ user, onLogout }) => {
               <div className="data-summary">
                 <h3>Data Presensi Saya</h3>
                 <p>
-                  Total: <strong>{attendanceData.length}</strong> record |
+                  Total: <strong>{filteredData.length}</strong> record |
                   Halaman: <strong>{currentPage}</strong> dari <strong>{totalPages}</strong> |
                   Menampilkan: <strong>{currentData.length}</strong> data
+                  {searchName && (
+                    <span className="filter-info">
+                      | Filter aktif: <strong>"{searchName}"</strong>
+                      <button
+                        className="clear-filter-text-btn"
+                        onClick={() => setSearchName('')}
+                        title="Hapus filter"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )}
                 </p>
+                {filteredData.length === 0 && attendanceData.length > 0 && (
+                  <div className="no-data-message">
+                    <p>🔍 Tidak ada data yang cocok dengan pencarian "{searchName}"</p>
+                    <small>Coba kata kunci lain atau hapus filter</small>
+                  </div>
+                )}
                 {attendanceData.length === 0 && (
                   <div className="no-data-message">
                     <p>📝 Belum ada data presensi</p>
@@ -155,6 +234,14 @@ const UserPage = ({ user, onLogout }) => {
               </div>
             )}
           </div>
+
+          {/* WhatsApp Recap - Only show if there's data */}
+          {attendanceData.length > 0 && (
+            <WhatsAppRecap
+              attendanceData={attendanceData}
+              tutorName={user?.name || 'Tutor'}
+            />
+          )}
 
           {/* Pagination Controls */}
           {totalPages > 1 && (
